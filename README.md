@@ -26,4 +26,5 @@ in every *command section* of your bot
 
 ## Important!
 This code is still in alpha and not finished. Everything *should* work but metrics like ram, cpu, custom things and bandwidth are not working.  
+Because this thing is still in developement i will not take any responsibility by using this code. Right now, it is not recommended to use this but i will accept any help :)  
 This code is a third-party application and not affiliated with Statcord.com.
