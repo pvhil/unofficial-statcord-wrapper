@@ -1,6 +1,5 @@
 import net.dv8tion.jda.api.JDA;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -8,7 +7,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.*;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class Statcord {
@@ -26,9 +26,10 @@ public class Statcord {
     public static JSONArray popcmd = new JSONArray();
     public static JSONArray activeuser = new JSONArray();
 
+
     public static void start(String id, String key, JDA jda, boolean autopost) {
-        
-        System.out.println("Statcord started with this: "+id+" "+key+" "+jda.toString());
+
+        System.out.println("\u001B[33mStatcord started with this: " + id + " " + key + " " + jda.toString() + "\u001B[0m");
 
         //save important stuff
         Statcord.jda = jda;
@@ -40,30 +41,39 @@ public class Statcord {
 
         if (autopost) {
             autorun();
-            System.out.println("[Statcord] autorun activated!");
+            System.out.println("\u001B[33m!!! [Statcord] autorun activated!\u001B[0m");
         }
 
     }
     //manually updating Stats
     public static void updateStats() throws IOException, InterruptedException {
-        System.out.println("manually updating Statcord!");
+        System.out.println("\u001B[33m!!! [Statcord] manually updating Statcord!\u001B[0m");
 
         servers = jda.getGuilds().size();
         users = jda.getUsers().size();
         memactive = (int) Runtime.getRuntime().totalMemory();
         memload = (int) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
+        int memperc = (memload * 100) / memactive;
+        System.out.println(popcmd.length());
+        if (popcmd.length() > 5) {
+            for (int i = 5; i > popcmd.length(); i++) {
+                popcmd.remove(i);
+                System.out.println("removed " + i);
+            }
+        }
+
 
         JSONObject post = new JSONObject();
         post.put("id", id);
         post.put("key", key);
-        post.put("servers" , String.valueOf(servers));
+        post.put("servers", String.valueOf(servers));
         post.put("users", String.valueOf(users));
-        post.put("active",activeuser);
-        post.put("commands",String.valueOf(commandsRun));
-        post.put("popular",popcmd);
-        post.put("memactive",String.valueOf(memactive));
-        post.put("memload","0");
-        post.put("cpuload","0");
+        post.put("active", activeuser);
+        post.put("commands", String.valueOf(commandsRun));
+        post.put("popular", popcmd);
+        post.put("memactive", String.valueOf(memactive));
+        post.put("memload", String.valueOf(memperc));
+        post.put("cpuload", "0");
         post.put("bandwidth","0");
 
         String body = post.toString();
@@ -79,7 +89,7 @@ public class Statcord {
     // command metrics with active users
     public static void commandPost(String command, String author) {
         if (!statcordActive) {
-            System.out.println("[Statcord]You can not use 'commandPost' because it is not active!");
+            System.out.println("\u001B[33m[Statcord]You can not use 'commandPost' because it is not active!\u001B[0m");
             return;
         }
         System.out.println("Doing it!");
@@ -92,7 +102,7 @@ public class Statcord {
         }else{
             for(int i=0; i< popcmd.length();i++){
                 if(popcmd.getJSONObject(i).getString("name").equalsIgnoreCase(command)){
-                    int test = popcmd.getJSONObject(i).getInt("count") +1;
+                    int test = popcmd.getJSONObject(i).getInt("count") + 1;
                     popcmd.getJSONObject(i).put("count", test);
                     break;
                 }
@@ -102,41 +112,13 @@ public class Statcord {
         commandsRun++;
 
         //active users
-        if(!activeuser.isEmpty()) {
-            if (activeuser.toString().contains(author)) {
-                activeuser.put(author);
-            }
+        if (!activeuser.toString().contains(author)) {
+            activeuser.put(author);
         }
+
 
         //When popular cmds are higher than 5, it gets shortened because Statcords only accepts 5 commands
-        if(popcmd.length() <5){
-            List<JSONObject> jsonValues = new ArrayList<JSONObject>();
-            for (int i = 0; i < popcmd.length(); i++) {
-                jsonValues.add(popcmd.getJSONObject(i));
-            }
-            jsonValues.sort(new Comparator<JSONObject>() {
-                private static final String KEY_NAME = "count";
 
-                @Override
-                public int compare(JSONObject a, JSONObject b) {
-                    String valA = "";
-                    String valB = "";
-
-                    try {
-                        valA = (String) a.get(KEY_NAME);
-                        valB = (String) b.get(KEY_NAME);
-                    } catch (JSONException ignored) {
-                    }
-                    return valA.compareTo(valB);
-
-                }
-            });
-            popcmd=new JSONArray();
-            for (int i = 0; i < jsonValues.size(); i++) {
-                popcmd.put(jsonValues.get(i));
-            }
-
-        }
 
     }
     //boolean if a value is existing in a jsonarray (for popular cmds)
@@ -158,8 +140,10 @@ public class Statcord {
         HttpResponse<String> response = client.send(request,
                 HttpResponse.BodyHandlers.ofString());
 
-        if(response.body().contains("Success")){
-            System.out.println("Updated Stats on Statcord!");
+        if (response.body().contains("Success")) {
+            System.out.println("\u001B[33m[Statcord] Updated Stats on Statcord!\u001B[0m");
+        } else {
+            System.out.println("Man its not working");
         }
     }
 
@@ -169,23 +153,32 @@ public class Statcord {
 
         timer.schedule(new TimerTask() {
             public void run() throws NullPointerException {
-                System.out.println("[Statcord] Automatic update!");
+                System.out.println("\u001B[33m[Statcord] Automatic update!\u001B[0m");
                 servers = jda.getGuilds().size();
                 users = jda.getUsers().size();
                 memactive = (int) Runtime.getRuntime().totalMemory();
                 memload = (int) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
+                int memperc = (memload * 100) / memactive;
+
+                if (popcmd.length() > 5) {
+                    for (int i = 5; i > popcmd.length(); i++) {
+                        popcmd.remove(i);
+                        System.out.println("removed " + i);
+                    }
+                }
+
 
                 JSONObject post = new JSONObject();
                 post.put("id", id);
                 post.put("key", key);
-                post.put("servers" , String.valueOf(servers));
+                post.put("servers", String.valueOf(servers));
                 post.put("users", String.valueOf(users));
-                post.put("active",activeuser);
-                post.put("commands",String.valueOf(commandsRun));
-                post.put("popular",popcmd);
-                post.put("memactive",String.valueOf(memactive));
-                post.put("memload","0");
-                post.put("cpuload","0");
+                post.put("active", activeuser);
+                post.put("commands", String.valueOf(commandsRun));
+                post.put("popular", popcmd);
+                post.put("memactive", String.valueOf(memactive));
+                post.put("memload", String.valueOf(memperc));
+                post.put("cpuload", "0");
                 post.put("bandwidth","0");
 
                 String body = post.toString();
@@ -199,6 +192,6 @@ public class Statcord {
                 popcmd = new JSONArray();
                 activeuser = new JSONArray();
             }
-        }, 5000, 60*1000);
+        }, 5000, 3600 * 1000);
     }
 }
