@@ -23,6 +23,30 @@ in every *command section* of your bot
 'command' means the command (like !help) (String)  
 'author' is the ID from the Bot User / Message author (String)
 
+# Example
+
+```java
+// Starting the Bot
+public static void main(String[] args) throws LoginException {
+
+        jda = JDABuilder.createDefault(BOTTOKEN)
+                .addEventListeners(new DiscordMessage())
+                .build();
+
+Statcord.start(jda.getSelfUser().getId(),"statcord.com-key",jda,true);
+}
+
+// A Command
+public void onMessageReceived(MessageReceivedEvent event) {
+  java.lang.String[] args = event.getMessage().getContentRaw().split("\\s+");
+  if (args[0].equalsIgnoreCase("help")) {
+    event.getChannel.sendMessage("message").queue();
+    Statcord.commandPost("help",event.getAuthor().getId());
+    }
+  }
+
+```
+
 ## Important!
 This code is still in alpha and not finished. Everything *should* work but metrics like ram, cpu, custom things and bandwidth are not working.  
 Because this thing is still in developement i will not take any responsibility by using this code. Right now, it is not recommended to use this but i will accept any help :)  
