@@ -12,7 +12,7 @@ What are these parameters?
 | id      | String | The ID of your Bot |
 | key      | String      |  Key from Statcord |
 | jda | JDA      | The JDA instance (mostly named jda)|
-| autopost | boolean      | allow autoposting stats every minute |
+| autopost | boolean      | allow autoposting stats every hour |
 
 To count commands and usage of them you have to use
 ```java
