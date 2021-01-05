@@ -26,7 +26,7 @@ in every *command section* of your bot
 
 For custom graphs use this:
 ```java
-customPost(id,content);
+Statcord.customPost(id,content);
 ```
 id can only be 1 or 2
 'content' is a String.
