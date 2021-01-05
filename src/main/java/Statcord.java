@@ -29,7 +29,9 @@ public class Statcord {
     private static JSONArray activeuser = new JSONArray();
     private static boolean autopost = false;
 
-    public static void start(String id, String key, JDA jda, boolean autopost) {
+    private static int time = 60; // autopost timer in min
+
+    public static void start(String id, String key, JDA jda, boolean autopost, int timerInMin) {
         System.out.println("\u001B[33mStatcord started with this: " + id + " " + key + " " + jda.toString() + "\u001B[0m");
 
         //save important stuff
@@ -39,6 +41,9 @@ public class Statcord {
 
         //make it active
         statcordActive = true;
+
+        time = timerInMin;
+
 
         if (autopost) {
             autorun();
@@ -58,14 +63,18 @@ public class Statcord {
 
     //manually updating Stats
     public static void updateStats() throws IOException, InterruptedException {
-        System.out.println("\u001B[33m!!! [Statcord] manually updating Statcord!\u001B[0m");
+        if (!statcordActive) {
+            System.out.println("\u001B[33m[Statcord]You can not use 'updateStats' because Statcord is not active!\u001B[0m");
+            return;
+        }
+        System.out.println("\u001B[33m[Statcord] Updating Statcord!\u001B[0m");
 
         servers = jda.getGuilds().size();
         users = jda.getUsers().size();
         memactive = (int) Runtime.getRuntime().totalMemory();
         memload = (int) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
-        int memperc = (memload / memactive) * 100;
-        System.out.println(popcmd.length());
+        double mem = ((double) memload / (double) memactive) * (double) 100;
+        int memperc = (int) Math.round(mem);
 
         OperatingSystemMXBean osBean = ManagementFactory.getPlatformMXBean(
                 OperatingSystemMXBean.class);
@@ -89,7 +98,6 @@ public class Statcord {
 
         String body = post.toString();
 
-        System.out.println(body);
         post(body);
 
         commandsRun = 0;
@@ -137,14 +145,14 @@ public class Statcord {
     }
 
     //http post to statcord
-    public static void post(String body) throws IOException, InterruptedException {
+    private static void post(String body) throws IOException, InterruptedException {
         String url = "https://statcord.com/logan/stats";
 
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .POST(HttpRequest.BodyPublishers.ofString(body))
-                .header("Content-Type","application/json")
+                .header("Content-Type", "application/json")
                 .build();
 
         HttpResponse<String> response = client.send(request,
@@ -153,7 +161,7 @@ public class Statcord {
         if (response.body().contains("Success")) {
             System.out.println("\u001B[33m[Statcord] Updated Stats on Statcord!\u001B[0m");
         } else {
-            System.out.println("Man its not working");
+            System.out.println("[Statcord] An error happened");
             System.out.println(response.body());
         }
     }
@@ -171,6 +179,6 @@ public class Statcord {
                     e.printStackTrace();
                 }
             }
-        }, 5000, 3600 * 1000);
+        }, 5000, time * 60000L);
     }
 }
