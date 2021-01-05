@@ -2,8 +2,7 @@
 My own java Wrapper to automatically post stats to Statcord with java
 
 ## How to use it.
-I try to upload it to a maven repo but you can try to compile it by yourself and adding it to a local maven repo. You need to use JDA!  
-After you started your bot, use this line of code to start the code:
+Heres a [Maven Dependency!](https://github.com/pvhil/unofficial-statcord-wrapper/packages/561598)
 ```java
 Statcord.start(id,key,jda,autopost)
 ```
