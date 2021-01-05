@@ -28,8 +28,12 @@ For custom graphs use this:
 ```java
 Statcord.customPost(id,content);
 ```
-id can only be 1 or 2
+id can only be 1 or 2  
 'content' is a String.
+```java
+Statcord.updateStats();
+```
+This boy manually updates stats.
 
 # Example
 
