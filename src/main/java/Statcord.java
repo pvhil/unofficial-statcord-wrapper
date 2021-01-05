@@ -24,6 +24,9 @@ public class Statcord {
     private static int cpuload = 0; // need help pls
     private static String bandwidth = "0"; // need help pls
 
+    private static String custom1 = "empty";
+    private static String custom2 = "empty";
+
     private static JDA jda = null;
     private static JSONArray popcmd = new JSONArray();
     private static JSONArray activeuser = new JSONArray();
@@ -95,6 +98,12 @@ public class Statcord {
         post.put("memload", String.valueOf(memperc));
         post.put("cpuload", String.valueOf(cpuload));
         post.put("bandwidth", "0");
+        if (!custom1.equalsIgnoreCase("empty")) {
+            post.put("custom1", custom1);
+        }
+        if (!custom2.equalsIgnoreCase("empty")) {
+            post.put("custom2", custom2);
+        }
 
         String body = post.toString();
 
@@ -103,7 +112,25 @@ public class Statcord {
         commandsRun = 0;
         popcmd = new JSONArray();
         activeuser = new JSONArray();
+        custom2 = "empty";
+        custom1 = "empty";
     }
+
+    public static void customPost(int id, String content) {
+        if (!statcordActive) {
+            System.out.println("\u001B[33m[Statcord]You can not use 'customPost' because Statcord is not active!\u001B[0m");
+            return;
+        }
+        if (id == 1) {
+            custom1 = content;
+        } else if (id == 2) {
+            custom2 = content;
+        } else {
+            System.out.println("[Statcord] The given customPost ID is not working. It only can be 1 or 2!");
+            return;
+        }
+    }
+
 
     // command metrics with active users
     public static void commandPost(String command, String author) {
