@@ -60,7 +60,7 @@ public void onMessageReceived(MessageReceivedEvent event) {
 ```
 
 ## Important!
-This code is still in alpha and not finished. Everything *should* work but metrics like ram, cpu, custom things and bandwidth are not working.  
+This code is still in alpha and not finished. Everything *should* work but bandwidth is not working because i can not find a way to get the usage.  
 Because this thing is still in developement i will not take any responsibility by using this code. Right now, I will accept any help :)  
 
 This code is a third-party application and not affiliated with Statcord.com.
