@@ -88,7 +88,7 @@
     <dependency>
         <groupId>net.dv8tion</groupId>
         <artifactId>JDA</artifactId>
-        <version>4.2.0_225</version>
+        <version>4.2.0_227</version>
         <exclusions>
             <exclusion>
                 <groupId>club.minnced</groupId>
@@ -99,7 +99,7 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20200518</version>
+            <version>20201115</version>
         </dependency>
 
     </dependencies>

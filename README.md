@@ -4,7 +4,7 @@ My own java Wrapper to automatically post stats to Statcord with java
 ## How to use it.
 Heres a [Maven Dependency!](https://github.com/pvhil/unofficial-statcord-wrapper/packages/561598)
 ```java
-Statcord.start(id,key,jda,autopost,timerInMin);
+Statcord.start(id, key, jda, autopost, timerInMin);
 ```
 What are these parameters?  
 | Parameter        | Type           | Meaning |
@@ -17,7 +17,7 @@ What are these parameters?
 
 To count commands and usage of them you have to use
 ```java
-Statcord.commandPost(command,author);
+Statcord.commandPost(command, author);
 ```
 in every *command section* of your bot
 
@@ -26,7 +26,7 @@ in every *command section* of your bot
 
 For custom graphs use this:
 ```java
-Statcord.customPost(id,content);
+Statcord.customPost(id, content);
 ```
 id can only be 1 or 2  
 'content' is a String.
