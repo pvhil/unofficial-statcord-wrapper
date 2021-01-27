@@ -2,6 +2,7 @@ import com.sun.management.OperatingSystemMXBean;
 import net.dv8tion.jda.api.JDA;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.URI;
@@ -19,9 +20,9 @@ public class Statcord {
   private static int commandsRun = 0;
   private static String key;
   private static String id;
-  private static int memactive = 0; // need help pls
-  private static int memload = 0; // need help pls
-  private static int cpuload = 0; // need help pls
+  private static int memactive = 0; // should work
+  private static int memload = 0; // should work
+  private static int cpuload = 0; // should work
 
   private static String bandwidth = "0"; // need help pls
   private static String custom1 = "empty";
@@ -67,11 +68,19 @@ public class Statcord {
     return autopost;
   }
 
+  public static String getCustom1() {
+    return custom1;
+  }
+
+  public static String getCustom2() {
+    return custom2;
+  }
+
   //manually updating Stats
   public static void updateStats() throws IOException, InterruptedException {
     if (!statcordActive) {
       System.out.println(
-          "\u001B[33m[Statcord]You can not use 'updateStats' because Statcord is not active!\u001B[0m");
+              "\u001B[33m[Statcord]You can not use 'updateStats' because Statcord is not active!\u001B[0m");
       return;
     }
     System.out.println("\u001B[33m[Statcord] Updating Statcord!\u001B[0m");
@@ -142,7 +151,7 @@ public class Statcord {
       System.out.println("\u001B[33m[Statcord]You can not use 'commandPost' because Statcord is not active!\u001B[0m");
       return;
     }
-    System.out.println("Doing it!");
+    System.out.println("Adding a command to Statcord");
 
     // popular cmds
     JSONObject obj = new JSONObject();
