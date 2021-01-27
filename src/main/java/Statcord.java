@@ -1,4 +1,7 @@
 import com.sun.management.OperatingSystemMXBean;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.util.Enumeration;
 import net.dv8tion.jda.api.JDA;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -35,8 +38,12 @@ public class Statcord {
   private static boolean autopost = false;
 
   private static int time = 60; // autopost timer in min
+  private static final SystemInfo si = new SystemInfo();
+  private static String NetworkName = "";
+  private static int count;
 
-  public static void start(String id, String key, JDA jda, boolean autopost, int timerInMin) {
+  public static void start(String id, String key, JDA jda, boolean autopost, int timerInMin)
+      throws Exception {
     System.out.println("\u001B[33mStatcord started with this: "
         + id + " "
         + key + " "
@@ -52,6 +59,7 @@ public class Statcord {
     statcordActive = true;
 
     time = timerInMin;
+    getNetworkName();
 
     if (autopost) {
       autorun();
@@ -92,9 +100,17 @@ public class Statcord {
     memload = (int) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
     double mem = ((double) memload / (double) memactive) * (double) 100;
     int memperc = (int) Math.round(mem);
-    SystemInfo si = new SystemInfo();
-    long down = si.getHardware().getNetworkIFs().get(0).getBytesRecv();
-    long up = si.getHardware().getNetworkIFs().get(0).getBytesSent();
+
+    for (int i = 0; i < si.getHardware().getNetworkIFs().size(); i++) {
+      count++;
+      if (si.getHardware().getNetworkIFs().get(i).getName().equals(NetworkName)) {
+        System.out.println(si.getHardware().getNetworkIFs().get(i).getName()); //for tests :)
+        break;
+      }
+    }
+
+    long down = si.getHardware().getNetworkIFs().get(count).getBytesRecv();
+    long up = si.getHardware().getNetworkIFs().get(count).getBytesSent();
     bandwidth = down + up;
 
     OperatingSystemMXBean osBean = ManagementFactory
@@ -227,5 +243,26 @@ public class Statcord {
         }
       }
     }, 5000, time * 60000L);
+  }
+
+  public static void getNetworkName() throws Exception {
+
+    final Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+
+    // get hostname
+    InetAddress myAddr = InetAddress.getByName(si.getOperatingSystem().getNetworkParams().getHostName());
+
+    while (networkInterfaces.hasMoreElements()) {
+      NetworkInterface networkInterface = networkInterfaces.nextElement();
+      Enumeration<InetAddress> inAddrs = networkInterface.getInetAddresses();
+      while (inAddrs.hasMoreElements()) {
+        InetAddress inAddr = inAddrs.nextElement();
+        if (inAddr.equals(myAddr)) {
+          NetworkName = networkInterface.getName();
+          return;
+        }
+      }
+    }
+    throw new Exception("Not found network hostname");
   }
 }
