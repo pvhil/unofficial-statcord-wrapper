@@ -22,11 +22,12 @@ public class Statcord {
   private static int commandsRun = 0;
   private static String key;
   private static String id;
-  private static int memactive = 0; // should work
-  private static int memload = 0; // should work
-  private static int cpuload = 0; // should work
+  private static int memactive = 0;
+  private static int memload = 0;
+  private static int cpuload = 0;
 
-  private static long bandwidth; // need help pls
+  private static long bandwidth;
+  private static long bandwidthOld;
   private static String custom1 = "empty";
   private static String custom2 = "empty";
 
@@ -35,15 +36,17 @@ public class Statcord {
   private static JSONArray activeuser = new JSONArray();
   private static boolean autopost = false;
 
+  private static SystemInfo si = new SystemInfo();
 
-  private static int time = 60; // autopost timer in min
+
+  private static int time = 5; // autopost timer in min
 
   public static void start(String id, String key, JDA jda, boolean autopost, int timerInMin) {
     System.out.println("\u001B[33mStatcord started with this: "
-        + id + " "
-        + key + " "
-        + jda.toString()
-        + "\u001B[0m");
+            + id + " "
+            + key + " "
+            + jda.toString()
+            + "\u001B[0m");
 
     //save important stuff
     Statcord.jda = jda;
@@ -60,6 +63,15 @@ public class Statcord {
       System.out.println("\u001B[33m!!! [Statcord] autorun activated!\u001B[0m");
       Statcord.autopost = true;
     }
+    ArrayList<Long> results = new ArrayList<Long>();
+    for (int i = 0; i < si.getHardware().getNetworkIFs().size(); i++) {
+
+      long down = si.getHardware().getNetworkIFs().get(i).getBytesRecv();
+      long up = si.getHardware().getNetworkIFs().get(i).getBytesSent();
+      long band = down + up;
+      results.add(band);
+    }
+    bandwidthOld = Collections.max(results);
   }
 
   //some booleans for users
@@ -97,8 +109,6 @@ public class Statcord {
     int memperc = (int) Math.round(mem);
 
     //Testing new dependency
-    //bandwidth
-    SystemInfo si = new SystemInfo();
 
     //bandwidth
     ArrayList<Long> results = new ArrayList<Long>();
@@ -108,8 +118,13 @@ public class Statcord {
       long up = si.getHardware().getNetworkIFs().get(i).getBytesSent();
       long band = down + up;
       results.add(band);
+
+      //searching way to break loop early
+
     }
-    bandwidth = Collections.max(results);
+    //only need new information
+    bandwidth = Collections.max(results) - bandwidthOld;
+    bandwidthOld = Collections.max(results);
 
     //cpu, removed other import to keep file as small as possible
     CentralProcessor cpu = si.getHardware().getProcessor();
