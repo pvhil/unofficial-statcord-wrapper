@@ -9,6 +9,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -97,9 +99,18 @@ public class Statcord {
     //Testing new dependency
     //bandwidth
     SystemInfo si = new SystemInfo();
-    long down = si.getHardware().getNetworkIFs().get(0).getBytesRecv();
-    long up = si.getHardware().getNetworkIFs().get(0).getBytesSent();
-    bandwidth = down + up;
+
+    //bandwidth
+    ArrayList<Long> results = new ArrayList<Long>();
+    for (int i = 0; i < si.getHardware().getNetworkIFs().size(); i++) {
+
+      long down = si.getHardware().getNetworkIFs().get(i).getBytesRecv();
+      long up = si.getHardware().getNetworkIFs().get(i).getBytesSent();
+      long band = down + up;
+      results.add(band);
+    }
+    bandwidth = Collections.max(results);
+
     //cpu, removed other import to keep file as small as possible
     CentralProcessor cpu = si.getHardware().getProcessor();
     cpuload = (int) (cpu.getSystemCpuLoadBetweenTicks(prevTicks) * 100); //testing if it gets the right load in this short amount of time
@@ -126,6 +137,7 @@ public class Statcord {
 
     String body = post.toString();
 
+    System.out.println(body);
     post(body);
 
     commandsRun = 0;
