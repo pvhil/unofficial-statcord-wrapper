@@ -1,17 +1,16 @@
-import com.sun.management.OperatingSystemMXBean;
 import net.dv8tion.jda.api.JDA;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import oshi.SystemInfo;
+import oshi.hardware.CentralProcessor;
 
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Timer;
 import java.util.TimerTask;
-import oshi.SystemInfo;
 
 public class Statcord {
 
@@ -33,6 +32,7 @@ public class Statcord {
   private static JSONArray popcmd = new JSONArray();
   private static JSONArray activeuser = new JSONArray();
   private static boolean autopost = false;
+
 
   private static int time = 60; // autopost timer in min
 
@@ -84,6 +84,7 @@ public class Statcord {
               "\u001B[33m[Statcord]You can not use 'updateStats' because Statcord is not active!\u001B[0m");
       return;
     }
+    long[] prevTicks = new long[CentralProcessor.TickType.values().length];
     System.out.println("\u001B[33m[Statcord] Updating Statcord!\u001B[0m");
 
     servers = jda.getGuilds().size();
@@ -92,16 +93,17 @@ public class Statcord {
     memload = (int) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
     double mem = ((double) memload / (double) memactive) * (double) 100;
     int memperc = (int) Math.round(mem);
+
+    //Testing new dependency
+    //bandwidth
     SystemInfo si = new SystemInfo();
     long down = si.getHardware().getNetworkIFs().get(0).getBytesRecv();
     long up = si.getHardware().getNetworkIFs().get(0).getBytesSent();
     bandwidth = down + up;
+    //cpu, removed other import to keep file as small as possible
+    CentralProcessor cpu = si.getHardware().getProcessor();
+    cpuload = (int) (cpu.getSystemCpuLoadBetweenTicks(prevTicks) * 100); //testing if it gets the right load in this short amount of time
 
-    OperatingSystemMXBean osBean = ManagementFactory
-        .getPlatformMXBean(OperatingSystemMXBean.class);
-
-    double processload = osBean.getSystemCpuLoad();
-    cpuload = (int) (processload * 100);
 
     JSONObject post = new JSONObject();
     post.put("id", id);
