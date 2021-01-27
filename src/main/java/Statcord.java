@@ -11,6 +11,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Timer;
 import java.util.TimerTask;
+import oshi.SystemInfo;
 
 public class Statcord {
 
@@ -24,7 +25,7 @@ public class Statcord {
   private static int memload = 0; // should work
   private static int cpuload = 0; // should work
 
-  private static String bandwidth = "0"; // need help pls
+  private static long bandwidth; // need help pls
   private static String custom1 = "empty";
   private static String custom2 = "empty";
 
@@ -91,6 +92,10 @@ public class Statcord {
     memload = (int) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
     double mem = ((double) memload / (double) memactive) * (double) 100;
     int memperc = (int) Math.round(mem);
+    SystemInfo si = new SystemInfo();
+    long down = si.getHardware().getNetworkIFs().get(0).getBytesRecv();
+    long up = si.getHardware().getNetworkIFs().get(0).getBytesSent();
+    bandwidth = down + up;
 
     OperatingSystemMXBean osBean = ManagementFactory
         .getPlatformMXBean(OperatingSystemMXBean.class);
@@ -109,7 +114,7 @@ public class Statcord {
     post.put("memactive", String.valueOf(memload));
     post.put("memload", String.valueOf(memperc));
     post.put("cpuload", String.valueOf(cpuload));
-    post.put("bandwidth", "0");
+    post.put("bandwidth", String.valueOf(bandwidth));
     if (!custom1.equalsIgnoreCase("empty")) {
       post.put("custom1", custom1);
     }
