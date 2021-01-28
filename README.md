@@ -64,3 +64,6 @@ This code is still in alpha and not finished. Everything *should* work but bandw
 Because this thing is still in developement i will not take any responsibility by using this code. Right now, I will accept any help :)  
 
 This code is a third-party application and not affiliated with Statcord.com.
+
+## Help please!
+I do not know much about sharding. I would love you if you could tell me how i can fetch metrics from shards :) Thanks
