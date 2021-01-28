@@ -5,12 +5,11 @@ import oshi.SystemInfo;
 import oshi.hardware.CentralProcessor;
 
 import java.io.IOException;
-import java.net.URI;
+import java.net.*;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -22,12 +21,15 @@ public class Statcord {
   private static int commandsRun = 0;
   private static String key;
   private static String id;
+
   private static int memactive = 0;
   private static int memload = 0;
   private static int cpuload = 0;
 
   private static long bandwidth;
   private static long bandwidthOld;
+  public static SystemInfo si = new SystemInfo(); // is public because maybe user wants some information
+
   private static String custom1 = "empty";
   private static String custom2 = "empty";
 
@@ -35,11 +37,12 @@ public class Statcord {
   private static JSONArray popcmd = new JSONArray();
   private static JSONArray activeuser = new JSONArray();
   private static boolean autopost = false;
-
-  private static SystemInfo si = new SystemInfo();
-
+  private static String ip;
 
   private static int time = 5; // autopost timer in min
+
+
+  //TODO create start void for ShardManager or generally for sharding
 
   public static void start(String id, String key, JDA jda, boolean autopost, int timerInMin) {
     System.out.println("\u001B[33mStatcord started with this: "
@@ -53,6 +56,27 @@ public class Statcord {
     Statcord.key = key;
     Statcord.id = id;
 
+
+    // get ip which is mainly used and test connection
+    try (final DatagramSocket socket = new DatagramSocket()) {
+      socket.connect(InetAddress.getByName("statcord.com"), 443);
+      ip = socket.getLocalAddress().getHostAddress();
+    } catch (SocketException | UnknownHostException e) {
+      e.printStackTrace();
+      System.out.println("[Statcord] Statcord is not reachable! Deactivating the wrapper..");
+      return;
+    }
+
+    for (int i = 0; i < si.getHardware().getNetworkIFs().size(); i++) {
+      if (Arrays.toString(si.getHardware().getNetworkIFs().get(i).getIPv4addr()).contains(ip)) {
+        System.out.println(si.getHardware().getNetworkIFs().get(i));
+        long down = si.getHardware().getNetworkIFs().get(i).getBytesRecv();
+        long up = si.getHardware().getNetworkIFs().get(i).getBytesSent();
+        bandwidthOld = down + up;
+        break;
+      }
+    }
+
     //make it active
     statcordActive = true;
 
@@ -63,15 +87,7 @@ public class Statcord {
       System.out.println("\u001B[33m!!! [Statcord] autorun activated!\u001B[0m");
       Statcord.autopost = true;
     }
-    ArrayList<Long> results = new ArrayList<Long>();
-    for (int i = 0; i < si.getHardware().getNetworkIFs().size(); i++) {
 
-      long down = si.getHardware().getNetworkIFs().get(i).getBytesRecv();
-      long up = si.getHardware().getNetworkIFs().get(i).getBytesSent();
-      long band = down + up;
-      results.add(band);
-    }
-    bandwidthOld = Collections.max(results);
   }
 
   //some booleans for users
@@ -108,27 +124,25 @@ public class Statcord {
     double mem = ((double) memload / (double) memactive) * (double) 100;
     int memperc = (int) Math.round(mem);
 
-    //Testing new dependency
 
-    //bandwidth
-    ArrayList<Long> results = new ArrayList<Long>();
+    //bandwidth should work
+    long bandwidthTemp = 0;
     for (int i = 0; i < si.getHardware().getNetworkIFs().size(); i++) {
-
-      long down = si.getHardware().getNetworkIFs().get(i).getBytesRecv();
-      long up = si.getHardware().getNetworkIFs().get(i).getBytesSent();
-      long band = down + up;
-      results.add(band);
-
-      //searching way to break loop early
-
+      if (Arrays.toString(si.getHardware().getNetworkIFs().get(i).getIPv4addr()).contains(ip)) {
+        System.out.println(si.getHardware().getNetworkIFs().get(i));
+        long down = si.getHardware().getNetworkIFs().get(i).getBytesRecv();
+        long up = si.getHardware().getNetworkIFs().get(i).getBytesSent();
+        bandwidthTemp = down + up;
+        break;
+      }
     }
     //only need new information
-    bandwidth = Collections.max(results) - bandwidthOld;
-    bandwidthOld = Collections.max(results);
+    bandwidth = bandwidthTemp - bandwidthOld;
+    bandwidthOld = bandwidthTemp;
 
-    //cpu, removed other import to keep file as small as possible
+    //cpu
     CentralProcessor cpu = si.getHardware().getProcessor();
-    cpuload = (int) (cpu.getSystemCpuLoadBetweenTicks(prevTicks) * 100); //testing if it gets the right load in this short amount of time
+    cpuload = (int) (cpu.getSystemCpuLoadBetweenTicks(prevTicks) * 100);
 
 
     JSONObject post = new JSONObject();
@@ -210,8 +224,6 @@ public class Statcord {
       activeuser.put(author);
     }
 
-    //When popular cmds are higher than 5, it gets shortened because Statcord only accepts 5 commands but!
-    // it is still working with more than 5 cmds, sooo im not going to delete them rn:)
   }
 
   //boolean if a value is existing in a jsonarray (for popular cmds)
@@ -241,7 +253,7 @@ public class Statcord {
     }
   }
 
-  //autorun set to 1h
+  //autorun set to 5min or custom
   public static void autorun() {
     Timer timer = new Timer();
 
