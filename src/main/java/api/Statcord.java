@@ -1,3 +1,5 @@
+package api;
+
 import net.dv8tion.jda.api.JDA;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -38,6 +40,7 @@ public class Statcord {
   private static JSONArray activeuser = new JSONArray();
   private static boolean autopost = false;
   private static String ip;
+  private static int networkInf;
 
   private static int time = 5; // autopost timer in min
 
@@ -69,10 +72,10 @@ public class Statcord {
 
     for (int i = 0; i < si.getHardware().getNetworkIFs().size(); i++) {
       if (Arrays.toString(si.getHardware().getNetworkIFs().get(i).getIPv4addr()).contains(ip)) {
-        System.out.println(si.getHardware().getNetworkIFs().get(i));
         long down = si.getHardware().getNetworkIFs().get(i).getBytesRecv();
         long up = si.getHardware().getNetworkIFs().get(i).getBytesSent();
         bandwidthOld = down + up;
+        networkInf = i;
         break;
       }
     }
@@ -127,15 +130,11 @@ public class Statcord {
 
     //bandwidth should work
     long bandwidthTemp = 0;
-    for (int i = 0; i < si.getHardware().getNetworkIFs().size(); i++) {
-      if (Arrays.toString(si.getHardware().getNetworkIFs().get(i).getIPv4addr()).contains(ip)) {
-        System.out.println(si.getHardware().getNetworkIFs().get(i));
-        long down = si.getHardware().getNetworkIFs().get(i).getBytesRecv();
-        long up = si.getHardware().getNetworkIFs().get(i).getBytesSent();
-        bandwidthTemp = down + up;
-        break;
-      }
-    }
+
+    long down = si.getHardware().getNetworkIFs().get(networkInf).getBytesRecv();
+    long up = si.getHardware().getNetworkIFs().get(networkInf).getBytesSent();
+    bandwidthTemp = down + up;
+
     //only need new information
     bandwidth = bandwidthTemp - bandwidthOld;
     bandwidthOld = bandwidthTemp;
@@ -237,13 +236,13 @@ public class Statcord {
 
     HttpClient client = HttpClient.newHttpClient();
     HttpRequest request = HttpRequest.newBuilder()
-        .uri(URI.create(url))
-        .POST(HttpRequest.BodyPublishers.ofString(body))
-        .header("Content-Type", "application/json")
-        .build();
+            .uri(URI.create(url))
+            .POST(HttpRequest.BodyPublishers.ofString(body))
+            .header("Content-Type", "application/json")
+            .build();
 
     HttpResponse<String> response = client.send(request,
-        HttpResponse.BodyHandlers.ofString());
+            HttpResponse.BodyHandlers.ofString());
 
     if (response.body().contains("Success")) {
       System.out.println("\u001B[33m[Statcord] Updated Stats on Statcord!\u001B[0m");
