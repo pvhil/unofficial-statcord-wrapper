@@ -1,22 +1,18 @@
 package api;
 
-import com.sun.management.OperatingSystemMXBean;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.util.Enumeration;
 import net.dv8tion.jda.api.JDA;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
+import oshi.SystemInfo;
+import oshi.hardware.CentralProcessor;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.net.URI;
+import java.net.*;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
-import oshi.SystemInfo;
 
 public class Statcord {
 
@@ -26,11 +22,15 @@ public class Statcord {
   private static int commandsRun = 0;
   private static String key;
   private static String id;
-  private static int memactive = 0; // should work
-  private static int memload = 0; // should work
-  private static int cpuload = 0; // should work
 
-  private static long bandwidth; // need help pls
+  private static int memactive = 0;
+  private static int memload = 0;
+  private static int cpuload = 0;
+
+  private static long bandwidth;
+  private static long bandwidthOld;
+  public static SystemInfo si = new SystemInfo(); // is public because maybe user wants some information
+
   private static String custom1 = "empty";
   private static String custom2 = "empty";
 
@@ -38,14 +38,15 @@ public class Statcord {
   private static JSONArray popcmd = new JSONArray();
   private static JSONArray activeuser = new JSONArray();
   private static boolean autopost = false;
+  private static String ip;
+  private static int networkInf;
 
-  private static int time = 60; // autopost timer in min
-  private static final SystemInfo si = new SystemInfo();
-  private static String NetworkName = "";
-  private static int count;
+  private static int time = 5; // autopost timer in min
 
-  public static void start(String id, String key, JDA jda, boolean autopost, int timerInMin)
-      throws Exception {
+
+  //TODO create start void for ShardManager or generally for sharding
+
+  public static void start(String id, String key, JDA jda, boolean autopost, int timerInMin) {
     System.out.println("\u001B[33mStatcord started with this: "
         + id + " "
         + key + " "
@@ -57,17 +58,38 @@ public class Statcord {
     Statcord.key = key;
     Statcord.id = id;
 
+
+    // get ip which is mainly used and test connection
+    try (final DatagramSocket socket = new DatagramSocket()) {
+      socket.connect(InetAddress.getByName("statcord.com"), 443);
+      ip = socket.getLocalAddress().getHostAddress();
+    } catch (SocketException | UnknownHostException e) {
+      e.printStackTrace();
+      System.out.println("[Statcord] Statcord is not reachable! Deactivating the wrapper..");
+      return;
+    }
+
+    for (int i = 0; i < si.getHardware().getNetworkIFs().size(); i++) {
+      if (Arrays.toString(si.getHardware().getNetworkIFs().get(i).getIPv4addr()).contains(ip)) {
+        long down = si.getHardware().getNetworkIFs().get(i).getBytesRecv();
+        long up = si.getHardware().getNetworkIFs().get(i).getBytesSent();
+        bandwidthOld = down + up;
+        networkInf = i;
+        break;
+      }
+    }
+
     //make it active
     statcordActive = true;
 
     time = timerInMin;
-    getNetworkName();
 
     if (autopost) {
       autorun();
       System.out.println("\u001B[33m!!! [Statcord] autorun activated!\u001B[0m");
       Statcord.autopost = true;
     }
+
   }
 
   //some booleans for users
@@ -91,9 +113,10 @@ public class Statcord {
   public static void updateStats() throws IOException, InterruptedException {
     if (!statcordActive) {
       System.out.println(
-              "\u001B[33m[Statcord]You can not use 'updateStats' because Statcord is not active!\u001B[0m");
+          "\u001B[33m[Statcord]You can not use 'updateStats' because Statcord is not active!\u001B[0m");
       return;
     }
+    long[] prevTicks = new long[CentralProcessor.TickType.values().length];
     System.out.println("\u001B[33m[Statcord] Updating Statcord!\u001B[0m");
 
     servers = jda.getGuilds().size();
@@ -103,23 +126,22 @@ public class Statcord {
     double mem = ((double) memload / (double) memactive) * (double) 100;
     int memperc = (int) Math.round(mem);
 
-    for (int i = 0; i < si.getHardware().getNetworkIFs().size(); i++) {
-      count++;
-      if (si.getHardware().getNetworkIFs().get(i).getName().equals(NetworkName)) {
-        System.out.println(si.getHardware().getNetworkIFs().get(i).getName()); //for tests :)
-        break;
-      }
-    }
 
-    long down = si.getHardware().getNetworkIFs().get(count).getBytesRecv();
-    long up = si.getHardware().getNetworkIFs().get(count).getBytesSent();
-    bandwidth = down + up;
+    //bandwidth should work
+    long bandwidthTemp = 0;
 
-    OperatingSystemMXBean osBean = ManagementFactory
-        .getPlatformMXBean(OperatingSystemMXBean.class);
+    long down = si.getHardware().getNetworkIFs().get(networkInf).getBytesRecv();
+    long up = si.getHardware().getNetworkIFs().get(networkInf).getBytesSent();
+    bandwidthTemp = down + up;
 
-    double processload = osBean.getSystemCpuLoad();
-    cpuload = (int) (processload * 100);
+    //only need new information
+    bandwidth = bandwidthTemp - bandwidthOld;
+    bandwidthOld = bandwidthTemp;
+
+    //cpu
+    CentralProcessor cpu = si.getHardware().getProcessor();
+    cpuload = (int) (cpu.getSystemCpuLoadBetweenTicks(prevTicks) * 100);
+
 
     JSONObject post = new JSONObject();
     post.put("id", id);
@@ -142,6 +164,7 @@ public class Statcord {
 
     String body = post.toString();
 
+    System.out.println(body);
     post(body);
 
     commandsRun = 0;
@@ -199,8 +222,6 @@ public class Statcord {
       activeuser.put(author);
     }
 
-    //When popular cmds are higher than 5, it gets shortened because Statcord only accepts 5 commands but!
-    // it is still working with more than 5 cmds, sooo im not going to delete them rn:)
   }
 
   //boolean if a value is existing in a jsonarray (for popular cmds)
@@ -230,7 +251,7 @@ public class Statcord {
     }
   }
 
-  //autorun set to 1h
+  //autorun set to 5min or custom
   public static void autorun() {
     Timer timer = new Timer();
 
@@ -245,26 +266,5 @@ public class Statcord {
         }
       }
     }, 5000, time * 60000L);
-  }
-
-  public static void getNetworkName() throws Exception {
-
-    final Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
-
-    // get hostname
-    InetAddress myAddr = InetAddress.getByName(si.getOperatingSystem().getNetworkParams().getHostName());
-
-    while (networkInterfaces.hasMoreElements()) {
-      NetworkInterface networkInterface = networkInterfaces.nextElement();
-      Enumeration<InetAddress> inAddrs = networkInterface.getInetAddresses();
-      while (inAddrs.hasMoreElements()) {
-        InetAddress inAddr = inAddrs.nextElement();
-        if (inAddr.equals(myAddr)) {
-          NetworkName = networkInterface.getName();
-          return;
-        }
-      }
-    }
-    throw new Exception("Not found network hostname");
   }
 }

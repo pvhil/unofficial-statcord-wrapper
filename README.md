@@ -2,18 +2,35 @@
 My own java Wrapper to automatically post stats to Statcord with java
 
 ## How to use it.
-Heres a [Maven Dependency!](https://github.com/pvhil/unofficial-statcord-wrapper/packages/561598)
+
+Last version: [jitpack.io](https://jitpack.io/#pvhil/unofficial-statcord-wrapper)
+
+```
+<dependency>
+  <groupId>com.github.pvhil</groupId>
+  <artifactId>unofficial-statcord-wrapper</artifactId>
+  <version>Tag</version>
+</dependency>
+
+<repositories>
+  <repository>
+  <id>jitpack.io</id>
+  <url>https://jitpack.io</url>
+  </repository>
+</repositories>
+```
+
 ```java
 Statcord.start(id, key, jda, autopost, timerInMin);
 ```
 What are these parameters?  
-| Parameter        | Type           | Meaning |
-| ------------- |:-------------:|:-------------:| 
-| id      | String | The ID of your Bot |
-| key      | String      |  Key from Statcord |
-| jda | JDA      | The JDA instance (mostly named jda)|
-| autopost | boolean      | allow autoposting stats every hour |
-| timerInMin | int      | Interval between automatic updates |
+| Parameter        | Type           | Meaning         |
+|: -------------- :|: ------------ :|: ------------- :|
+| id               | String         | The ID of your Bot |
+| key              | String         |  Key from Statcord |
+| jda              | JDA            | The JDA instance (mostly named jda)|
+| autopost         | boolean        | allow autoposting stats every hour |
+| timerInMin       | int            | Interval between automatic updates |
 
 To count commands and usage of them you have to use
 ```java
@@ -45,7 +62,7 @@ public static void main(String[] args) throws LoginException {
                 .addEventListeners(new DiscordMessage())
                 .build();
 
-Statcord.start(jda.getSelfUser().getId(),"statcord.com-key",jda,true,5);
+Statcord.start(jda.getSelfUser().getId(), "statcord.com-key", jda, true, 5);
 }
 
 // A Command
@@ -53,7 +70,7 @@ public void onMessageReceived(MessageReceivedEvent event) {
   java.lang.String[] args = event.getMessage().getContentRaw().split("\\s+");
   if (args[0].equalsIgnoreCase("help")) {
     event.getChannel.sendMessage("message").queue();
-    Statcord.commandPost("help",event.getAuthor().getId());
+    Statcord.commandPost("help", event.getAuthor().getId());
     }
   }
 
