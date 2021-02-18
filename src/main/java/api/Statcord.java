@@ -1,3 +1,5 @@
+package api;
+
 import com.sun.management.OperatingSystemMXBean;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
