@@ -25,13 +25,13 @@ Last version: [jitpack.io](https://jitpack.io/#pvhil/unofficial-statcord-wrapper
 Statcord.start(id, key, jda, autopost, timerInMin);
 ```
 What are these parameters?  
-| Parameter        | Type           | Meaning         |
-|: -------------- :|: ------------ :|: ------------- :|
-| id               | String         | The ID of your Bot |
-| key              | String         |  Key from Statcord |
-| jda              | JDA            | The JDA instance (mostly named jda)|
-| autopost         | boolean        | allow autoposting stats every hour |
-| timerInMin       | int            | Interval between automatic updates |
+| Parameter        | Type           | Meaning |
+| ------------- |:-------------:|:-------------:| 
+| id      | String | The ID of your Bot |
+| key      | String      |  Key from Statcord |
+| jda | JDA      | The JDA instance (mostly named jda)|
+| autopost | boolean      | allow autoposting stats every hour |
+| timerInMin | int      | Interval between automatic updates |
 
 To count commands and usage of them you have to use
 ```java
