@@ -7,7 +7,6 @@ import net.dv8tion.jda.api.JDA;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import oshi.SystemInfo;
-import oshi.hardware.CentralProcessor;
 import java.io.IOException;
 import java.net.*;
 import java.net.http.HttpClient;
