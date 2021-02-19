@@ -68,7 +68,6 @@ public class Statcord {
     for (int i = 0; i < si.getHardware().getNetworkIFs().size(); i++) {
       count++;
       if (si.getHardware().getNetworkIFs().get(i).getName().equals(NetworkName)) {
-        System.out.println(si.getHardware().getNetworkIFs().get(i).getName()); //for tests :)
         break;
       }
     }
@@ -76,10 +75,6 @@ public class Statcord {
     getNetworkSpeed();
 
     bandwidth = down + up;
-    System.out.println("down " + down);
-    System.out.println("up " + up);
-
-    System.out.println("bandwidth " + bandwidth);
 
     //make it active
     statcordActive = true;
@@ -271,9 +266,9 @@ public class Statcord {
 
   public static void getNetworkSpeed() {
 
-    NetworkIF[] networkIFs = si.getHardware().getNetworkIFs().toArray(new NetworkIF[0]);
+    NetworkIF[] networkIFs = si.getHardware().getNetworkIFs().toArray(new NetworkIF[count]);
     int i = 0;
-    NetworkIF net = networkIFs[0];
+    NetworkIF net = networkIFs[count];
     try {
       while (!networkIFs[i].getName().equals(NetworkName)) {
         net = networkIFs[i];
