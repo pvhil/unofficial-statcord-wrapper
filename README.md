@@ -62,8 +62,9 @@ public static void main(String[] args) throws LoginException {
         jda = JDABuilder.createDefault(BOTTOKEN)
                 .addEventListeners(new DiscordMessage())
                 .build();
-
-Statcord.start(jda.getSelfUser().getId(), "statcord.com-key", jda, true, 5);
+                
+ClassWithThread classWithThread = new ClassWithThread();
+classWithThread.start();
 }
 
 // A Command
@@ -74,7 +75,24 @@ public void onMessageReceived(MessageReceivedEvent event) {
     Statcord.commandPost("help", event.getAuthor().getId());
     }
   }
-
+```
+**Since the code is stopping the thread, you need to run it in another thread!**
+```java
+public class ClassWithThread extends Thread {
+  @Override
+  public void run() {
+    try {
+      Statcord.start(
+          BotStart.jda.getSelfUser().getId(), 
+          Config.getStatcrord(), 
+          BotStart.jda, 
+          true, 
+          5);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+}
 ```
 
 ## Important!
