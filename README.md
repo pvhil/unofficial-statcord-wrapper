@@ -5,12 +5,12 @@ My own java Wrapper to automatically post stats to Statcord with java
 
 Last version: [jitpack.io](https://jitpack.io/#pvhil/unofficial-statcord-wrapper)
 
-#### maven dependency
-```
+**Maven**
+```xml
 <dependency>
   <groupId>com.github.pvhil</groupId>
   <artifactId>unofficial-statcord-wrapper</artifactId>
-  <version>Tag</version>
+  <version>VERSION</version>
 </dependency>
 
 <repositories>
