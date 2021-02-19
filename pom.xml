@@ -5,9 +5,10 @@
   <modelVersion>4.0.0</modelVersion>
 
 
+
   <groupId>de.pvhil</groupId>
   <artifactId>statcordapi</artifactId>
-  <version>4.0-ALPHA</version>
+  <version>5.0-ALPHA</version>
   <distributionManagement>
     <repository>
       <id>github</id>
@@ -16,8 +17,7 @@
     </repository>
   </distributionManagement>
 
-
-  <properties>
+<properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <maven.compiler.source>11</maven.compiler.source>
