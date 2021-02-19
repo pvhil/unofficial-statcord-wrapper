@@ -1,5 +1,7 @@
 package api;
 
+import com.sun.management.OperatingSystemMXBean;
+import java.lang.management.ManagementFactory;
 import java.util.Enumeration;
 import net.dv8tion.jda.api.JDA;
 import org.json.JSONArray;
@@ -26,10 +28,11 @@ public class Statcord {
 
   private static int memactive = 0;
   private static int memload = 0;
-  private static int cpuload = 0;
+  private static long cpuload = 0;
 
   private static long bandwidth;
   public static SystemInfo si = new SystemInfo(); // is public because maybe user wants some information
+  private static final OperatingSystemMXBean osBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
 
   private static String custom1 = "empty";
   private static String custom2 = "empty";
@@ -116,7 +119,6 @@ public class Statcord {
           "\u001B[33m[Statcord]You can not use 'updateStats' because Statcord is not active!\u001B[0m");
       return;
     }
-    long[] prevTicks = new long[CentralProcessor.TickType.values().length];
     System.out.println("\u001B[33m[Statcord] Updating Statcord!\u001B[0m");
 
     servers = jda.getGuilds().size();
@@ -127,8 +129,17 @@ public class Statcord {
     int memperc = (int) Math.round(mem);
 
     //cpu
-    CentralProcessor cpu = si.getHardware().getProcessor();
-    cpuload = (int) (cpu.getSystemCpuLoadBetweenTicks(prevTicks) * 100);
+    long nanoBefore = System.nanoTime();
+    long cpuBefore = osBean.getProcessCpuTime();
+
+    long cpuAfter = osBean.getProcessCpuTime();
+    long nanoAfter = System.nanoTime();
+
+    if (nanoAfter > nanoBefore) {
+      cpuload = ((cpuAfter - cpuBefore) * 100L) / (nanoAfter - nanoBefore);
+    } else {
+      cpuload = 0;
+    }
 
     JSONObject post = new JSONObject();
     post.put("id", id);
