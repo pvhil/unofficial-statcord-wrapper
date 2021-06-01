@@ -20,6 +20,7 @@ import oshi.hardware.NetworkIF;
 
 public class Statcord {
 
+  private static final String URL = "https://api.statcord.com/v3/stats";
   private static boolean statcordActive = false;
   private static boolean runned = false;
 
@@ -33,7 +34,7 @@ public class Statcord {
   private static int memload = 0;
 
   private static long bandwidth;
-  
+
   public static SystemInfo systemInfo = new SystemInfo(); // is public because maybe user wants some information
   private static final HardwareAbstractionLayer systemInfoHardware = systemInfo.getHardware();
   private static final CentralProcessor cpu = systemInfoHardware.getProcessor();
@@ -59,11 +60,11 @@ public class Statcord {
 
   //TODO create start void for ShardManager or generally for sharding
   public static void start(String id, String key, JDA jda, boolean autopost, int timerInMin)
-      throws Exception {
+          throws Exception {
     System.out.println(ANSI_YELLOW + "Statcord started with this: "
-        + id + " "
-        + key + " "
-        + jda.toString() + RESET);
+            + id + " "
+            + key + " "
+            + jda.toString() + RESET);
 
     //save important stuff
     Statcord.jda = jda;
@@ -86,23 +87,6 @@ public class Statcord {
       Statcord.autopost = true;
     }
 
-  }
-
-  //some booleans for users
-  public static boolean isStatcordActive() {
-    return statcordActive;
-  }
-
-  public static boolean isAutopostActive() {
-    return autopost;
-  }
-
-  public static String getCustom1() {
-    return custom1;
-  }
-
-  public static String getCustom2() {
-    return custom2;
   }
 
   //manually updating Stats
@@ -152,23 +136,6 @@ public class Statcord {
     custom1 = "empty";
   }
 
-  public static void customPost(int id, String content) {
-    if (!statcordActive) {
-      System.out.println(ANSI_YELLOW + "[Statcord]You can not use 'customPost' because Statcord is not active!" + RESET);
-      return;
-    }
-    switch (id) {
-      case (1):
-        custom1 = content;
-      case (2):
-        custom2 = content;
-      default:
-        System.out.println("[Statcord] The given customPost ID is not working. It only can be 1 or 2!");
-        break;
-    }
-  }
-
-
   // command metrics with active users
   public static void commandPost(String command, String author) {
     if (!statcordActive) {
@@ -209,23 +176,22 @@ public class Statcord {
 
   //http post to statcord
   private static void post(String body) throws IOException, InterruptedException {
-    String url = "https://statcord.com/logan/stats";
-
+    System.out.println(body);
     HttpClient client = HttpClient.newHttpClient();
     HttpRequest request = HttpRequest.newBuilder()
-        .uri(URI.create(url))
-        .POST(HttpRequest.BodyPublishers.ofString(body))
-        .header("Content-Type", "application/json")
-        .build();
+            .uri(URI.create(URL))
+            .POST(HttpRequest.BodyPublishers.ofString(body))
+            .header("Content-Type", "application/json")
+            .build();
 
-    HttpResponse<String> response = client.send(request,
-        HttpResponse.BodyHandlers.ofString());
+    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-    if (response.body().contains("Success")) {
+    if (response.body().contains("error\":false")) {
       System.out.println(ANSI_YELLOW + "[Statcord] Updated Stats on Statcord!" + RESET);
     } else {
       System.out.println("[Statcord] An error happened");
-      System.out.println(response.body());
+      System.out.println("Status code: " + response.statusCode());
+      System.out.println("Response body: " + response.body());
     }
   }
 
@@ -236,22 +202,22 @@ public class Statcord {
   }
 
   public static void getNetworkName() throws Exception {
-    final Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
-    // get hostname
-    InetAddress myAddr = InetAddress.getByName(systemInfo.getOperatingSystem().getNetworkParams().getHostName());
+    Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+    // hostname is passed to your method
+    InetAddress myAddr = InetAddress.getLocalHost();
 
     while (networkInterfaces.hasMoreElements()) {
       NetworkInterface networkInterface = networkInterfaces.nextElement();
       Enumeration<InetAddress> inAddrs = networkInterface.getInetAddresses();
       while (inAddrs.hasMoreElements()) {
-        InetAddress inAddr = inAddrs.nextElement();
-        if (inAddr.equals(myAddr)) {
+        InetAddress inetAddress = inAddrs.nextElement();
+        if (inetAddress.equals(myAddr)) {
           NetworkName = networkInterface.getName();
           return;
         }
       }
     }
-    System.out.println("Not found network hostname");
+    throw new Exception("Not found network hostname");
   }
 
   public static long getNetworkSpeed() {
